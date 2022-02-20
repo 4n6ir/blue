@@ -194,7 +194,18 @@ class BlueStack(Stack):
             _iam.ManagedPolicy.from_aws_managed_policy_name(
                 'AmazonSSMManagedInstanceCore'
             )
-        )        
+        )
+
+        role.add_to_policy(
+            _iam.PolicyStatement(
+                actions = [
+                    'ssm:GetParameter'
+                ],
+                resources = [
+                    '*'
+                ]
+            )
+        )
 
         role.add_to_policy(
             _iam.PolicyStatement(
@@ -270,8 +281,6 @@ class BlueStack(Stack):
             _iam.PolicyStatement(
                 actions = [
                     'ec2:DescribeInstances',
-                    'events:DisableRule',
-                    'ssm:GetParameter',
                     'ssm:SendCommand'
                 ],
                 resources = [
