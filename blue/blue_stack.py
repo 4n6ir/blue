@@ -253,29 +253,60 @@ class BlueStack(Stack):
             instance_id = instance.instance_id
         )
 
-        config = _lambda.Function(
-            self, 'config',
+        config = _iam.Role(
+            self, 'config', 
+            assumed_by = _iam.ServicePrincipal(
+                'lambda.amazonaws.com'
+            )
+        )
+        
+        config.add_managed_policy(
+            _iam.ManagedPolicy.from_aws_managed_policy_name(
+                'service-role/AWSLambdaBasicExecutionRole'
+            )
+        )
+        
+        config.add_to_policy(
+            _iam.PolicyStatement(
+                actions = [
+                    'ec2:DescribeInstances',
+                    'events:DisableRule',
+                    'ssm:GetParameter',
+                    'ssm:SendCommand'
+                ],
+                resources = [
+                    '*'
+                ]
+            )
+        )
+
+        compute = _lambda.Function(
+            self, 'compute',
             code = _lambda.Code.from_asset('config'),
             handler = 'config.handler',
             runtime = _lambda.Runtime.PYTHON_3_9,
             timeout = Duration.seconds(30),
-            memory_size = 128,
-            role = role
+            environment = dict(
+                INSTANCE = instance.instance_id,
+                SCRIPTS3 = script_name
+            ),
+            memory_size = 512,
+            role = config
         )
        
         logs = _logs.LogGroup(
             self, 'logs',
-            log_group_name = '/aws/lambda/'+config.function_name,
+            log_group_name = '/aws/lambda/'+compute.function_name,
             retention = _logs.RetentionDays.ONE_DAY,
             removal_policy = RemovalPolicy.DESTROY
         )
 
-        #provider = _custom.Provider(
-        #    self, 'provider',
-        #    on_event_handler = config
-        #)
+        provider = _custom.Provider(
+            self, 'provider',
+            on_event_handler = compute
+        )
 
-        #resource = CustomResource(
-        #    self, 'resource',
-        #    service_token = provider.service_token
-        #)
+        resource = CustomResource(
+            self, 'resource',
+            service_token = provider.service_token
+        )
