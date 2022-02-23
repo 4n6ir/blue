@@ -4,12 +4,6 @@ import os
 
 def handler(event, context):
 
-    ec2_client = boto3.client('ec2')
-    
-    response = ec2_client.describe_instances(
-        InstanceIds = [os.environ['INSTANCE']]
-    )
-
     ssm_client = boto3.client('ssm')
 
     ssm_client.send_command(

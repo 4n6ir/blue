@@ -179,7 +179,9 @@ class BlueStack(Stack):
         ### Ubuntu Server 20.04 LTS ###
         ubuntu = _ec2.MachineImage.generic_linux(
             {
-                'us-east-2': 'ami-0fb653ca2d3203ac1'
+                'us-east-1': 'ami-04505e74c0741db8d',
+                'us-east-2': 'ami-0fb653ca2d3203ac1',
+                'us-west-2': 'ami-0892d3c7ee96c0bf7'
             }
         )
 
@@ -280,7 +282,6 @@ class BlueStack(Stack):
         config.add_to_policy(
             _iam.PolicyStatement(
                 actions = [
-                    'ec2:DescribeInstances',
                     'ssm:SendCommand'
                 ],
                 resources = [
