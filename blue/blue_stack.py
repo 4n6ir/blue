@@ -52,11 +52,11 @@ class BlueStack(Stack):
         os.system('echo "#!/usr/bin/bash" >> script/blue.sh')
         os.system('echo "apt-get update" >> script/blue.sh')
         os.system('echo "apt-get upgrade -y" >> script/blue.sh')
-        os.system('echo "apt-get install python3-pip unzip -y" >> script/blue.sh')
+        os.system('echo "apt-get install nfs-common python3-pip unzip -y" >> script/blue.sh')
         os.system('echo "wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -P /tmp/" >> script/blue.sh')
         os.system('echo "unzip /tmp/awscli-exe-linux-x86_64.zip -d /tmp" >> script/blue.sh')
         os.system('echo "/tmp/aws/install" >> script/blue.sh')
-        os.system('echo "pip3 install boto3" >> script/blue.sh')
+        os.system('echo "pip3 install boto3 requests" >> script/blue.sh')
         os.system('echo "aws s3 cp s3://'+script_name+'/blue.py /tmp/blue.py" >> script/blue.sh')
         os.system('echo "/usr/bin/python3 /tmp/blue.py" >> script/blue.sh')
 

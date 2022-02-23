@@ -35,6 +35,6 @@ response = ssm_client.get_parameter(
 )
 fsid = response['Parameter']['Value']
 
-os.system('echo "'+zone+'.'+fsid+'.efs.'+region+'.amazonaws.com:/export/storage /storage nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab')
+os.system('echo "'+zone+'.'+fsid+'.efs.'+region+'.amazonaws.com:/ /storage nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab')
 
 os.system('mount -a')
