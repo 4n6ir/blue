@@ -242,6 +242,10 @@ class BlueStack(Stack):
                 resources = [
                     archive.bucket_arn,
                     archive.arn_for_objects('*'),
+                    debpkg.bucket_arn,
+                    debpkg.arn_for_objects('*'),
+                    rpmpkg.bucket_arn,
+                    rpmpkg.arn_for_objects('*'),
                     script.bucket_arn,
                     script.arn_for_objects('*')
                 ]
