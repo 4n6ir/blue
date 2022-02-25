@@ -46,19 +46,43 @@ class BlueStack(Stack):
             versioned = True
         )
 
+        debpkg_name = 'blue-'+str(account)+'-deb-'+region
+        
+        debpkg = _s3.Bucket(
+            self, 'debpkg',
+            bucket_name = debpkg_name,
+            encryption = _s3.BucketEncryption.KMS_MANAGED,
+            block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy = RemovalPolicy.DESTROY,
+            auto_delete_objects = True,
+            versioned = True
+        )
+
+        rpmpkg_name = 'blue-'+str(account)+'-rpm-'+region
+        
+        rpmpkg = _s3.Bucket(
+            self, 'rpmpkg',
+            bucket_name = rpmpkg_name,
+            encryption = _s3.BucketEncryption.KMS_MANAGED,
+            block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy = RemovalPolicy.DESTROY,
+            auto_delete_objects = True,
+            versioned = True
+        )
+
         script_name = 'blue-'+str(account)+'-scripts-'+region
 
-        os.system('touch script/blue.sh')
-        os.system('echo "#!/usr/bin/bash" >> script/blue.sh')
-        os.system('echo "apt-get update" >> script/blue.sh')
-        os.system('echo "apt-get upgrade -y" >> script/blue.sh')
-        os.system('echo "apt-get install nfs-common python3-pip unzip -y" >> script/blue.sh')
-        os.system('echo "wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -P /tmp/" >> script/blue.sh')
-        os.system('echo "unzip /tmp/awscli-exe-linux-x86_64.zip -d /tmp" >> script/blue.sh')
-        os.system('echo "/tmp/aws/install" >> script/blue.sh')
-        os.system('echo "pip3 install boto3 requests" >> script/blue.sh')
-        os.system('echo "aws s3 cp s3://'+script_name+'/blue.py /tmp/blue.py" >> script/blue.sh')
-        os.system('echo "/usr/bin/python3 /tmp/blue.py" >> script/blue.sh')
+        #os.system('touch script/blue.sh')
+        #os.system('echo "#!/usr/bin/bash" >> script/blue.sh')
+        #os.system('echo "apt-get update" >> script/blue.sh')
+        #os.system('echo "apt-get upgrade -y" >> script/blue.sh')
+        #os.system('echo "apt-get install nfs-common python3-pip unzip -y" >> script/blue.sh')
+        #os.system('echo "wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -P /tmp/" >> script/blue.sh')
+        #os.system('echo "unzip /tmp/awscli-exe-linux-x86_64.zip -d /tmp" >> script/blue.sh')
+        #os.system('echo "/tmp/aws/install" >> script/blue.sh')
+        #os.system('echo "pip3 install boto3 requests" >> script/blue.sh')
+        #os.system('echo "aws s3 cp s3://'+script_name+'/blue.py /tmp/blue.py" >> script/blue.sh')
+        #os.system('echo "/usr/bin/python3 /tmp/blue.py" >> script/blue.sh')
 
         script = _s3.Bucket(
             self, 'script',
@@ -70,12 +94,12 @@ class BlueStack(Stack):
             versioned = True
         )
 
-        scripts = _deployment.BucketDeployment(
-            self, 'scripts',
-            sources = [_deployment.Source.asset('script')],
-            destination_bucket = script,
-            prune = False
-        )
+        #scripts = _deployment.BucketDeployment(
+        #    self, 'scripts',
+        #    sources = [_deployment.Source.asset('script')],
+        #    destination_bucket = script,
+        #    prune = False
+        #)
 
         vpc = _ec2.Vpc(
             self, 'vpc',
@@ -311,12 +335,12 @@ class BlueStack(Stack):
             removal_policy = RemovalPolicy.DESTROY
         )
 
-        provider = _custom.Provider(
-            self, 'provider',
-            on_event_handler = compute
-        )
+        #provider = _custom.Provider(
+        #    self, 'provider',
+        #    on_event_handler = compute
+        #)
 
-        resource = CustomResource(
-            self, 'resource',
-            service_token = provider.service_token
-        )
+        #resource = CustomResource(
+        #    self, 'resource',
+        #    service_token = provider.service_token
+        #)
