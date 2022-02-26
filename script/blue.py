@@ -6,7 +6,7 @@ import requests
 from subprocess import run
 
 os.system('mkfs -t ext4 /dev/nvme1n1')
-os.system('mkdir /data /storage')
+os.system('mkdir /data /datastore')
 
 ebs = run( [ 'blkid' ], capture_output=True )
 drives = ebs.stdout.decode().split('\n')
@@ -35,6 +35,6 @@ response = ssm_client.get_parameter(
 )
 fsid = response['Parameter']['Value']
 
-os.system('echo "'+zone+'.'+fsid+'.efs.'+region+'.amazonaws.com:/ /storage nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab')
+os.system('echo "'+zone+'.'+fsid+'.efs.'+region+'.amazonaws.com:/ /datastore nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab')
 
 os.system('mount -a')

@@ -46,23 +46,11 @@ class BlueStack(Stack):
             versioned = True
         )
 
-        debpkg_name = 'blue-'+str(account)+'-deb-'+region
+        distributor_name = 'blue-'+str(account)+'-distributor-'+region
         
-        debpkg = _s3.Bucket(
-            self, 'debpkg',
-            bucket_name = debpkg_name,
-            encryption = _s3.BucketEncryption.KMS_MANAGED,
-            block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
-            removal_policy = RemovalPolicy.DESTROY,
-            auto_delete_objects = True,
-            versioned = True
-        )
-
-        rpmpkg_name = 'blue-'+str(account)+'-rpm-'+region
-        
-        rpmpkg = _s3.Bucket(
-            self, 'rpmpkg',
-            bucket_name = rpmpkg_name,
+        distributor = _s3.Bucket(
+            self, 'distributor',
+            bucket_name = distributor_name,
             encryption = _s3.BucketEncryption.KMS_MANAGED,
             block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy = RemovalPolicy.DESTROY,
@@ -72,17 +60,17 @@ class BlueStack(Stack):
 
         script_name = 'blue-'+str(account)+'-scripts-'+region
 
-        #os.system('touch script/blue.sh')
-        #os.system('echo "#!/usr/bin/bash" >> script/blue.sh')
-        #os.system('echo "apt-get update" >> script/blue.sh')
-        #os.system('echo "apt-get upgrade -y" >> script/blue.sh')
-        #os.system('echo "apt-get install nfs-common python3-pip unzip -y" >> script/blue.sh')
-        #os.system('echo "wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -P /tmp/" >> script/blue.sh')
-        #os.system('echo "unzip /tmp/awscli-exe-linux-x86_64.zip -d /tmp" >> script/blue.sh')
-        #os.system('echo "/tmp/aws/install" >> script/blue.sh')
-        #os.system('echo "pip3 install boto3 requests" >> script/blue.sh')
-        #os.system('echo "aws s3 cp s3://'+script_name+'/blue.py /tmp/blue.py" >> script/blue.sh')
-        #os.system('echo "/usr/bin/python3 /tmp/blue.py" >> script/blue.sh')
+        os.system('touch script/blue.sh')
+        os.system('echo "#!/usr/bin/bash" >> script/blue.sh')
+        os.system('echo "apt-get update" >> script/blue.sh')
+        os.system('echo "apt-get upgrade -y" >> script/blue.sh')
+        os.system('echo "apt-get install nfs-common python3-pip unzip -y" >> script/blue.sh')
+        os.system('echo "wget https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -P /tmp/" >> script/blue.sh')
+        os.system('echo "unzip /tmp/awscli-exe-linux-x86_64.zip -d /tmp" >> script/blue.sh')
+        os.system('echo "/tmp/aws/install" >> script/blue.sh')
+        os.system('echo "pip3 install boto3 requests" >> script/blue.sh')
+        os.system('echo "aws s3 cp s3://'+script_name+'/blue.py /tmp/blue.py" >> script/blue.sh')
+        os.system('echo "/usr/bin/python3 /tmp/blue.py" >> script/blue.sh')
 
         script = _s3.Bucket(
             self, 'script',
@@ -94,12 +82,12 @@ class BlueStack(Stack):
             versioned = True
         )
 
-        #scripts = _deployment.BucketDeployment(
-        #    self, 'scripts',
-        #    sources = [_deployment.Source.asset('script')],
-        #    destination_bucket = script,
-        #    prune = False
-        #)
+        scripts = _deployment.BucketDeployment(
+            self, 'scripts',
+            sources = [_deployment.Source.asset('script')],
+            destination_bucket = script,
+            prune = False
+        )
 
         vpc = _ec2.Vpc(
             self, 'vpc',
@@ -169,7 +157,12 @@ class BlueStack(Stack):
             log_destination_type = 's3',
             log_destination = flows.bucket_arn,
             max_aggregation_interval = 600,
-            log_format = '${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}'
+            log_format = '${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}',
+            destination_options = {
+                'FileFormat': 'parquet',
+                'HiveCompatiblePartitions': 'true',
+                'PerHourPartition': 'true'
+            }
         )
 
         efs = _efs.FileSystem(
@@ -180,7 +173,7 @@ class BlueStack(Stack):
 
         storage = efs.add_access_point(
             'storage',
-            path = '/export/storage',
+            path = '/export/datastore',
             create_acl = _efs.Acl(
                 owner_uid = '1001',
                 owner_gid = '1001',
@@ -242,10 +235,8 @@ class BlueStack(Stack):
                 resources = [
                     archive.bucket_arn,
                     archive.arn_for_objects('*'),
-                    debpkg.bucket_arn,
-                    debpkg.arn_for_objects('*'),
-                    rpmpkg.bucket_arn,
-                    rpmpkg.arn_for_objects('*'),
+                    distributor.bucket_arn,
+                    distributor.arn_for_objects('*'),
                     script.bucket_arn,
                     script.arn_for_objects('*')
                 ]
@@ -339,12 +330,12 @@ class BlueStack(Stack):
             removal_policy = RemovalPolicy.DESTROY
         )
 
-        #provider = _custom.Provider(
-        #    self, 'provider',
-        #    on_event_handler = compute
-        #)
+        provider = _custom.Provider(
+            self, 'provider',
+            on_event_handler = compute
+        )
 
-        #resource = CustomResource(
-        #    self, 'resource',
-        #    service_token = provider.service_token
-        #)
+        resource = CustomResource(
+            self, 'resource',
+            service_token = provider.service_token
+        )
