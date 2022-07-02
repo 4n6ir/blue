@@ -199,9 +199,9 @@ class BlueStack(Stack):
         ### Ubuntu Server 20.04 LTS ###
         ubuntu = _ec2.MachineImage.generic_linux(
             {
-                'us-east-1': 'ami-04505e74c0741db8d',
-                'us-east-2': 'ami-0fb653ca2d3203ac1',
-                'us-west-2': 'ami-0892d3c7ee96c0bf7'
+                'us-east-1': 'ami-08d4ac5b634553e16',
+                'us-east-2': 'ami-0960ab670c8bb45f3',
+                'us-west-2': 'ami-0ddf424f81ddb0720'
             }
         )
 
