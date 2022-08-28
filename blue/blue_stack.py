@@ -28,9 +28,25 @@ class BlueStack(Stack):
 
 ################################################################################
 
-        ebs_root = 8
-        ebs_data = 4
-        ec2_type = 't3a.nano'
+        ebs_root = 8                            # <-- Enter Root Storage GBs
+
+        ebs_data = 4                            # <-- Enter Data Storage GBs
+
+        ec2_type = 't3a.nano'                   # <-- Enter EC2 Size
+
+        vpc_id = 'vpc-0aa03892e4dcb8332'        # <-- Enter VPC ID
+
+        availability_zones = [                  # <-- Enter Availability Zones
+            'us-east-2a'
+        ]
+
+        subnet_ids = [                          # <-- Enter Subnet IDs
+            'subnet-0e4585252960eaa13'
+        ]
+
+        route_table_ids = [                     # <-- Enter Route Table IDs
+            'rtb-0f893a206d5d46654'
+        ]
 
 ################################################################################
         
@@ -92,80 +108,14 @@ class BlueStack(Stack):
             prune = False
         )
 
-        vpc = _ec2.Vpc(
+        vpc = _ec2.Vpc.from_vpc_attributes(
             self, 'vpc',
-            cidr = '192.168.42.0/24',
-            max_azs = 1,
-            nat_gateways = 0,
-            enable_dns_hostnames = True,
-            enable_dns_support = True,
-            subnet_configuration = [
-                _ec2.SubnetConfiguration(
-                    cidr_mask = 24,
-                    name = 'Public',
-                    subnet_type = _ec2.SubnetType.PUBLIC
-                )
-            ],
-            gateway_endpoints = {
-                'S3': _ec2.GatewayVpcEndpointOptions(
-                    service = _ec2.GatewayVpcEndpointAwsService.S3
-                )
-            }
-        )
-
-        for subnets in vpc.public_subnets:
-            subnet = subnets
-
-        nacl = _ec2.NetworkAcl(
-            self, 'nacl',
-            vpc = vpc,
-            subnet_selection = subnet
-        )
-
-        nacl.add_entry(
-            'ingress100',
-            rule_number = 100,
-            cidr = _ec2.AclCidr.ipv4('0.0.0.0/0'),
-            traffic = _ec2.AclTraffic.all_traffic(),
-            rule_action = _ec2.Action.ALLOW,
-            direction = _ec2.TrafficDirection.INGRESS
-        )
-
-        nacl.add_entry(
-            'egress100',
-            rule_number = 100,
-            cidr = _ec2.AclCidr.ipv4('0.0.0.0/0'),
-            traffic = _ec2.AclTraffic.all_traffic(),
-            rule_action = _ec2.Action.ALLOW,
-            direction = _ec2.TrafficDirection.EGRESS
-        )
-        
-        flows_name = 'blue-'+str(account)+'-flows-'+region
-        
-        flows = _s3.Bucket(
-            self, 'flows',
-            bucket_name = flows_name,
-            encryption = _s3.BucketEncryption.KMS_MANAGED,
-            block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
-            removal_policy = RemovalPolicy.DESTROY,
-            auto_delete_objects = True,
-            versioned = True
-        )
-
-        vpcflow = _ec2.CfnFlowLog(
-            self, 'vpcflow',
-            resource_id = vpc.vpc_id,
-            resource_type = 'VPC',
-            traffic_type = 'ALL',
-            log_destination_type = 's3',
-            log_destination = flows.bucket_arn,
-            max_aggregation_interval = 600,
-            log_format = '${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}',
-            destination_options = {
-                'FileFormat': 'parquet',
-                'HiveCompatiblePartitions': 'true',
-                'PerHourPartition': 'true'
-            }
+            vpc_id = vpc_id,
+            availability_zones = availability_zones,
+            #private_subnet_ids = subnet_ids,
+            #private_subnet_route_table_ids = route_table_ids,
+            public_subnet_ids = subnet_ids,
+            public_subnet_route_table_ids = route_table_ids
         )
 
         efs = _efs.FileSystem(
