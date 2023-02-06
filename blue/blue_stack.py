@@ -36,7 +36,6 @@ class BlueStack(Stack):
             self, suppressions = [
                 {'id': 'AwsSolutions-L1','reason': 'GitHub Issue'},
                 {'id': 'AwsSolutions-S1','reason': 'GitHub Issue'},
-                {'id': 'AwsSolutions-S10','reason': 'GitHub Issue'},
                 {'id': 'AwsSolutions-IAM4','reason': 'GitHub Issue'},
                 {'id': 'AwsSolutions-IAM5','reason': 'GitHub Issue'},
                 {'id': 'AwsSolutions-EC23','reason': 'GitHub Issue'},
@@ -81,6 +80,7 @@ class BlueStack(Stack):
             block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy = RemovalPolicy.DESTROY,
             auto_delete_objects = True,
+            enforce_ssl = True,
             versioned = True
         )
 
@@ -93,6 +93,7 @@ class BlueStack(Stack):
             block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy = RemovalPolicy.DESTROY,
             auto_delete_objects = True,
+            enforce_ssl = True,
             versioned = True
         )
 
@@ -120,6 +121,7 @@ class BlueStack(Stack):
             block_public_access = _s3.BlockPublicAccess.BLOCK_ALL,
             removal_policy = RemovalPolicy.DESTROY,
             auto_delete_objects = True,
+            enforce_ssl = True,
             versioned = True
         )
 
