@@ -19,6 +19,6 @@ BlueStack(
 )
 
 cdk.Tags.of(app).add('Alias','Velociraptor')
-cdk.Tags.of(app).add('GitHub','https://github.com/jblukach/blue.git')
+cdk.Tags.of(app).add('GitHub','https://github.com/4n6ir/blue.git')
 
 app.synth()
